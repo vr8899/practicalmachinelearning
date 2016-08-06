@@ -1,7 +1,7 @@
 ---
 title: "Practical Machine Learning Course Project"
 author: "Vernon Rothery"
-date: "5 August 2016"
+date: "6 August 2016"
 output: html_document
 ---
 
@@ -9,22 +9,54 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(rattle)
+set.seed(1111)
+
+```
+
 ## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+ <http://rmarkdown.rstudio.com>.
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
+```{r cars, echo=TRUE}
 summary(cars)
 ```
 
 ## Including Plots
+##Downloading from the Data Source.
+Copy hyperlinks from coursera website.
+Creates trainUrl and testUrl environment variables to be used to create the training and testing data files.
+```{r}
 
-You can also embed plots, for example:
+trainUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+training <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+testUrl <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+testing <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
+
+inTrain <- createDataPartition(y=training$classe, p=0.6, list=FALSE)
+
+myTraining <- training[inTrain, ]
+myTesting <- training[-inTrain, ]
+dim(myTraining); dim(myTesting)
+
+
 ```
+
+library(parallel)
+library(doParallel)
+cluster <- makeCluster(detectCores() - 1) # convention to leave 1 core for OS
+registerDoParallel(cluster)
+#develop Model
+
+#stop parallel processing
+stopCluster(cluster)
+
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
