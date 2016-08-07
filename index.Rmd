@@ -1,9 +1,12 @@
 ---
 title: "Practical Machine Learning Course Project"
 author: "Vernon Rothery"
-date: "6 August 2016"
+date: "7 August 2016"
 output: html_document
 ---
+<!-- When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+ -->
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -17,23 +20,31 @@ library(rattle)
 library(curl)
 library(randomForest)
 library(knitr)
+library(gbm)
+
 set.seed(1111)
 
 ```
 
-## R Markdown Background
+## Inital Anaylisis of the RAW data
 
- <http://rmarkdown.rstudio.com>.
- 
  <https://raw.githubusercontent.com/vr8899/practicalmachinelearning/gh-pages/Rplot.png>.
  <https://raw.githubusercontent.com/vr8899/practicalmachinelearning/gh-pages/Rplot02.png>.
  <https://raw.githubusercontent.com/vr8899/practicalmachinelearning/gh-pages/Rplot04.png>.
  
 
- 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
 Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: 
+exactly according to the specification (Class A), 
+throwing the elbows to the front (Class B), 
+lifting the dumbbell only halfway (Class C), 
+lowering the dumbbell only halfway (Class D), 
+throwing the hips to the front (Class E).
+
+Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes.
+
+Read more: http://groupware.les.inf.puc-rio.br/har#collaborators#ixzz4GeJ4nAoT
 
 ##Data Sources
 The training data and testing data for this project are available here:
@@ -47,11 +58,6 @@ Ugulino, W.; Cardador, D.; Vega, K.; Velloso, E.; Milidiu, R.; Fuks, H. Wearable
 Read more: http://groupware.les.inf.puc-rio.br/har#ixzz4GZ4P579O
 
 
-```{r cars, echo=TRUE}
-summary(cars)
-```
-
-## Including Plots
 ##Downloading from the Data Source.
 Copy hyperlinks from coursera website.
 Creates trainUrl and testUrl environment variables to be used to create the training and testing data files.
@@ -79,6 +85,11 @@ registerDoParallel(cluster)
 
 ```
 #Data Clean
+<!--  Some code variations I was working on to compress and stip out unnecessary data.
+strip <- preProcess(training[,-159], method = "nvz" )
+preProcess(training[,-159], method = c("center", "scale", "YeoJohnson" ))
+' -->
+
 ```{r}
 
 myDataNZV <- nearZeroVar(myTraining, saveMetrics=TRUE)
@@ -104,8 +115,15 @@ myTraining <- myTraining[c(-1)]
 
 ```
 
-Cleaning Variables with too many NAs. For Variables that have more than a 60% threshold of NA’s I’m going to leave them out:
+Removing variables with too many blank spaces (NA's). Variables that have more than a 60% threshold will be left out:
 
+This is similar to the model proposed in Qualitative Activity Recognition of Weight Lifting Exercises <http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf>
+
+"In order to identify the most relevant features we used the feature selection algorithm based on correlation proposed by Hall [14]. The algorithm was configured to use a “Best First”
+strategy based on backtracking. 17 features were selected:
+in the belt, were selected the mean and variance of the roll,maximum, range and variance of the accelerometer vector, variance of the gyro and variance of the magnetometer. 
+In the arm, the variance of the accelerometer vector and the maximum and minimum of the magnetometer were selected.
+In the dumbbell, the selected features were the maximum of the acceleration, variance of the gyro and maximum and minimum of the magnetometer, while in the glove, the sum of the pitch and the maximum and minimum of the gyro were selected.""
 
 #Develop Model
 ```{r}
@@ -209,6 +227,15 @@ gbmAccuracyTest
 
 ```
 
+```{r}
+plot(gbmFit1, ylim=c(0.9, 1))
+
+```
+Predicting Results from the Test Data
+Random Forests gave an Accuracy in the myTesting dataset of 99.89%, which was more accurate that what I got from the Decision Trees. 
+#Out of Sample Error.
+The expected out-of-sample error is 100-99.89 = 0.11%.
+
 
 #Prediction on Training Set
 ```{r}
@@ -217,14 +244,18 @@ predictionB2
 
 ```
 
-
 #Stop Parallel Processing
-stopCluster(cluster)
+Code is stopCluster(cluster)
 ```{r}
 stopCluster(cluster)
 ```
 
-#Improvements
- <https://www.coursera.org/learn/practical-machine-learning/lecture/QU66P/preprocessing-with-principal-components-analysis>
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+#Improvements
+
+The code could be simplified and reduced if you only concentrate on the dumbbell movement if you didn't mind the reduction in accuracy.
+
+How would you apply this product to real-life?  Would you have to attach your smart-phone to the dumbbell before your workout?
+
+<!-- Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot. -->
